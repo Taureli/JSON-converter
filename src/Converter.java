@@ -1,3 +1,4 @@
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 
 class Person {
@@ -6,6 +7,7 @@ class Person {
 	public char test = 'c';
 	public boolean student = true;
 	public float testfloat = 12.34f;
+	public int[] tab = {2, 3, 4};
 }
 
 public class Converter {
@@ -17,12 +19,25 @@ public class Converter {
 		converted = "{\"" + a.getClass().getName() + "\": {";
 
 		for(Field f: a.getClass().getFields()){
+			
+			//System.out.println(f.getType());
+			
 			//zmienne liczbowe
 			if(f.getType() == int.class || f.getType() == short.class || f.getType() == long.class || f.getType() == float.class || f.getType() == double.class){
 				converted += "\"" + f.getName() + "\": " + f.get(a) + ", ";
 			//zmienne znakowe
 			} else if(f.getType() == String.class || f.getType() == char.class || f.getType() == boolean.class){
 				converted += "\"" + f.getName() + "\": \"" + f.get(a) + "\", ";
+			//tablice
+			} else if(f.getType().isArray()){
+				
+				converted += "\"" + f.getName() + "\":[";
+				
+				for (int i = 0; i < Array.getLength(f.get(a)); i++){
+					converted += "{\"" + Array.get(f.get(a), i) + "\"},";
+				}
+				
+				converted += "], ";
 			}
 		}
 		
