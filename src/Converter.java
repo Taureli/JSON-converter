@@ -8,11 +8,33 @@ class Person {
 	public boolean student = true;
 	public float testfloat = 12.34f;
 	public int[] tab = {2, 3, 4};
+	public int[][] t = new int[3][3];
+	
+	public Person(){
+		t[0][1] = 10;
+		t[2][2] = 5;
+ 	}
 }
 
-public class Converter {
+class Converter {
 
 	public static String converted;
+	
+	public static void arrayConvert(Field f, Object a) throws IllegalArgumentException, IllegalAccessException{
+		for(int i = 0; i < Array.getLength(a); i++){
+			Object arr = Array.get(a, i);
+			
+			System.out.println(arr.getClass());
+			if(arr.getClass().isArray()){
+				arrayConvert(f, arr);
+			} else if(arr.getClass() == int.class || arr.getClass() == Integer.class || arr.getClass() == short.class || arr.getClass() == long.class || arr.getClass() == float.class || arr.getClass() == double.class){
+				converted += arr + ", ";
+			} else if(arr.getClass() == String.class || arr.getClass() == char.class || arr.getClass() == boolean.class){
+				converted += "\"" + arr + "\", ";
+			}
+			
+		}
+	}
 	
 	public static void toJSON(Object a) throws IllegalArgumentException, IllegalAccessException{
 		
@@ -21,21 +43,13 @@ public class Converter {
 		for(Field f: a.getClass().getFields()){
 			
 			//System.out.println(f.getType());
-			
-			//zmienne liczbowe
-			if(f.getType() == int.class || f.getType() == short.class || f.getType() == long.class || f.getType() == float.class || f.getType() == double.class){
-				converted += "\"" + f.getName() + "\": " + f.get(a) + ", ";
-			//zmienne znakowe
-			} else if(f.getType() == String.class || f.getType() == char.class || f.getType() == boolean.class){
-				converted += "\"" + f.getName() + "\": \"" + f.get(a) + "\", ";
+				
 			//tablice
-			} else if(f.getType().isArray()){
+			if(!checker(f, a) && f.getType().isArray()){
 				
 				converted += "\"" + f.getName() + "\":[";
 				
-				for (int i = 0; i < Array.getLength(f.get(a)); i++){
-					converted += "{\"" + Array.get(f.get(a), i) + "\"},";
-				}
+				arrayConvert(f, f.get(a));
 				
 				converted += "], ";
 			}
@@ -47,9 +61,22 @@ public class Converter {
 		
 	}
 	
-	public static void main(String[] args) throws IllegalArgumentException, IllegalAccessException{
-		Person test = new Person();
-		toJSON(test);
+	public static boolean checker(Field f, Object a) throws IllegalArgumentException, IllegalAccessException{
+		
+		System.out.println("field: " + f + " object: " + a);
+		
+		//zmienne liczbowe
+		if(f.getType() == int.class || f.getType() == Integer.class || f.getType() == short.class || f.getType() == long.class || f.getType() == float.class || f.getType() == double.class){
+			converted += "\"" + f.getName() + "\": " + f.get(a) + ", ";
+			//System.out.println(f.get(a));
+			return true;
+		//zmienne znakowe
+		} else if(f.getType() == String.class || f.getType() == char.class || f.getType() == boolean.class){
+			converted += "\"" + f.getName() + "\": \"" + f.get(a) + "\", ";	
+			return true;
+		}
+		
+		return false;
 	}
 
 }
