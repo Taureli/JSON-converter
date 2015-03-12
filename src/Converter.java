@@ -20,11 +20,13 @@ class Converter {
 
 	public static String converted;
 	
+	//Konwersja dla tablic
 	public static void arrayConvert(Field f, Object a) throws IllegalArgumentException, IllegalAccessException{
 		for(int i = 0; i < Array.getLength(a); i++){
+			
+			//pobieram element z listy i sprawdzam jego typ
 			Object arr = Array.get(a, i);
 			
-			System.out.println(arr.getClass());
 			if(arr.getClass().isArray()){
 				arrayConvert(f, arr);
 			} else if(arr.getClass() == int.class || arr.getClass() == Integer.class || arr.getClass() == short.class || arr.getClass() == long.class || arr.getClass() == float.class || arr.getClass() == double.class){
@@ -33,7 +35,8 @@ class Converter {
 				converted += "\"" + arr + "\", ";
 			}
 			
-		}
+		}		
+		
 	}
 	
 	public static void toJSON(Object a) throws IllegalArgumentException, IllegalAccessException{
@@ -41,34 +44,35 @@ class Converter {
 		converted = "{\"" + a.getClass().getName() + "\": {";
 
 		for(Field f: a.getClass().getFields()){
-			
-			//System.out.println(f.getType());
 				
-			//tablice
-			if(!checker(f, a) && f.getType().isArray()){
-				
+			//Konwersja dla typow prostych i wywolanie metody w przypadku tablic
+			if(!checker(f, a) && f.getType().isArray()){				
 				converted += "\"" + f.getName() + "\":[";
 				
 				arrayConvert(f, f.get(a));
+				
+				//usuniêcie ostatniego przecinka:
+				converted = converted.substring(0, converted.length()-2);
 				
 				converted += "], ";
 			}
 		}
 		
-		converted += "}}";
+		//usuniêcie ostatniego przecinka:
+		converted = converted.substring(0, converted.length()-2);
 		
-		System.out.println(converted);
+		converted += "}}";
 		
 	}
 	
+	//Rozroznia typy liczbowe od znakowych
 	public static boolean checker(Field f, Object a) throws IllegalArgumentException, IllegalAccessException{
 		
-		System.out.println("field: " + f + " object: " + a);
+		//System.out.println("field: " + f + " object: " + a);
 		
 		//zmienne liczbowe
 		if(f.getType() == int.class || f.getType() == Integer.class || f.getType() == short.class || f.getType() == long.class || f.getType() == float.class || f.getType() == double.class){
 			converted += "\"" + f.getName() + "\": " + f.get(a) + ", ";
-			//System.out.println(f.get(a));
 			return true;
 		//zmienne znakowe
 		} else if(f.getType() == String.class || f.getType() == char.class || f.getType() == boolean.class){
